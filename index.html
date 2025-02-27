@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kualitas Udara Kota Samarinda</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kualitas Udara Kota Samarinda</h1>
+        </div>
+
+        <div class="current-data" id="currentData">
+            <h2>Data Terkini</h2>
+            <div id="currentAirQuality">Loading...</div>
+        </div>
+
+        <div class="history-data" id="historyData">
+        </div>
+
+        <div class="map-container">
+            <h2>Peta Kualitas Udara Samarinda</h2>
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
