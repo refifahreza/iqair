@@ -3,11 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#009966">
     <title>Kualitas Udara Kota Samarinda</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Add a favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💨</text></svg>">
 </head>
 
 <body>
@@ -18,7 +21,12 @@
 
         <div class="current-data" id="currentData">
             <h2>Data Terkini</h2>
-            <div id="currentAirQuality">Loading...</div>
+            <div id="currentAirQuality">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Memuat data kualitas udara...</p>
+                </div>
+            </div>
         </div>
 
         <div class="history-data" id="historyData">
@@ -28,6 +36,10 @@
             <h2>Peta Kualitas Udara Samarinda</h2>
             <div id="map"></div>
         </div>
+        
+        <footer class="footer">
+            <p>Data kualitas udara disediakan oleh <a href="https://www.iqair.com" target="_blank">IQAir</a></p>
+        </footer>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

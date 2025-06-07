@@ -1,4 +1,3 @@
-
 const API_KEY = 'fe0d7d0e-c29f-468d-99cb-292d008c5261';
 const CITY = 'Samarinda';
 const COUNTRY = 'Indonesia';
@@ -58,6 +57,16 @@ function getWeatherDescription(iconCode) {
     return weatherDesc[iconCode] || 'Tidak Diketahui';
 }
 
+// Fungsi untuk mendapatkan ikon AQI berdasarkan nilai
+function getAQIEmoji(aqi) {
+    if (aqi <= 50) return '😊'; // Good
+    if (aqi <= 100) return '😐'; // Moderate
+    if (aqi <= 150) return '😟'; // Unhealthy for Sensitive Groups
+    if (aqi <= 200) return '😷'; // Unhealthy
+    if (aqi <= 300) return '🤢'; // Very Unhealthy
+    return '☠️'; // Hazardous
+}
+
 // Fungsi untuk mengambil data terkini
 async function getCurrentData() {
     try {
@@ -114,50 +123,58 @@ function displayCurrentData(cityData) {
         else if (aqi <= 200) aqiText = 'Tidak Sehat';
         else aqiText = 'Sangat Tidak Sehat';
         
+        // Get date in a more readable format
+        const lastUpdated = new Date(pollution.ts);
+        const formattedDate = lastUpdated.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        const formattedTime = lastUpdated.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
         currentAirQuality.innerHTML = `
                     <h3>Lokasi: ${cityData.city}, ${cityData.state}, ${cityData.country}</h3>
                     <div class="aqi-indicator ${aqiClass}">
-                        AQI: ${pollution.aqius} - ${aqiText}
+                        AQI: ${pollution.aqius} - ${aqiText} <span class="aqi-emoji">${getAQIEmoji(aqi)}</span>
                     </div>
-                    <div class="weather-icon" style="text-align: center; font-size: 3em; margin: 15px 0;">
-                        ${getWeatherIcon(weather.ic)}
-                        <div style="font-size: 0.4em; margin-top: 5px;">
+                    <div class="weather-icon">
+                        <span style="font-size: 3em;">${getWeatherIcon(weather.ic)}</span>
+                        <span style="font-size: 1.2em; margin-top: 5px;">
                             ${getWeatherDescription(weather.ic)}
-                        </div>
+                        </span>
                     </div>
                     <div class="weather-grid">
-                        <!-- <div class="weather-item">
-                            <h4>PM2.5</h4>
-                            <p>${pm25Conc} µg/m³</p>
-                            <small>Partikel halus di bawah 2,5 mikron</small>
-                        </div>
                         <div class="weather-item">
-                            <h4>PM10</h4>
-                            <p>${pm10Conc} µg/m³</p>
-                            <small>Partikel kasar di bawah 10 mikron</small>
-                        </div> -->
-                        <div class="weather-item">
+                            <div class="weather-icon-small">🌡️</div>
                             <h4>Suhu</h4>
                             <p>${weather.tp}&deg;C</p>
                         </div>
                         <div class="weather-item">
+                            <div class="weather-icon-small">💧</div>
                             <h4>Kelembaban</h4>
                             <p>${weather.hu}%</p>
+                            <small>(Rentang normal: 0% - 100%)</small>
                         </div>
                         <div class="weather-item">
+                            <div class="weather-icon-small">🧭</div>
                             <h4>Tekanan Udara</h4>
                             <p>${weather.pr} hPa</p>
                         </div>
                         <div class="weather-item">
+                            <div class="weather-icon-small">💨</div>
                             <h4>Kecepatan Angin</h4>
                             <p>${weather.ws} m/s</p>
+                            <small>(Angin normal: 0.3 - 3.4 m/s)</small>
                         </div>
                     </div>
                     <div class="pollutant-info">
                         <p>Polutan Utama: ${getPollutantName(pollution.mainus)}</p>
                     </div>
                     <div class="last-updated">
-                        Terakhir diperbarui: ${new Date(pollution.ts).toLocaleString()}
+                        Terakhir diperbarui: ${formattedDate}, ${formattedTime}
                     </div>
                 `;
     } else {
@@ -206,7 +223,12 @@ async function getHistoricalData() {
     // Fungsi untuk menginisialisasi peta
     function initMap() {
         const samarindaCenter = [-0.5016, 117.1537];
-        const map = L.map('map').setView(samarindaCenter, 12);
+        
+        // Check if we're on mobile
+        const isMobile = window.innerWidth <= 480;
+        const initialZoom = isMobile ? 11 : 12;
+        
+        const map = L.map('map').setView(samarindaCenter, initialZoom);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
@@ -217,7 +239,7 @@ async function getHistoricalData() {
                 <div style="min-width: 200px;">
                     <h3 style="margin: 0 0 10px 0;">Kualitas Udara & Cuaca</h3>
                     <div style="margin-bottom: 8px;">
-                        <strong>AQI:</strong> <span style="color: ${getAQIColor(currentAQI)};">${currentAQI}</span>
+                        <strong>AQI:</strong> <span style="color: ${getAQIColor(currentAQI)};">${currentAQI}</span> ${getAQIEmoji(currentAQI)}
                     </div>
                     <div style="margin-bottom: 10px; text-align: center; font-size: 2em;">
                         ${getWeatherIcon(currentWeather.ic)}
@@ -226,16 +248,16 @@ async function getHistoricalData() {
                         <strong>${getWeatherDescription(currentWeather.ic)}</strong>
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>Suhu:</strong> ${currentWeather.tp}°C
+                        <strong>🌡️ Suhu:</strong> ${currentWeather.tp}°C
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>Kelembaban:</strong> ${currentWeather.hu}%
+                        <strong>💧 Kelembaban:</strong> ${currentWeather.hu}% (0% - 100%)
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>Tekanan Udara:</strong> ${currentWeather.pr} hPa
+                        <strong>🧭 Tekanan Udara:</strong> ${currentWeather.pr} hPa
                     </div>
                     <div>
-                        <strong>Kecepatan Angin:</strong> ${currentWeather.ws} m/s
+                        <strong>💨 Kecepatan Angin:</strong> ${currentWeather.ws} m/s (Normal: 0.3 - 3.4 m/s)
                     </div>
                 </div>
             `;
@@ -264,23 +286,23 @@ async function getHistoricalData() {
                     <h4 style="margin: 0 0 8px 0;">Kualitas Udara</h4>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #009966"></div>
-                        <span>Baik (0-50)</span>
+                        <span>Baik (0-50) 😊</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #ffde33"></div>
-                        <span>Sedang (51-100)</span>
+                        <span>Sedang (51-100) 😐</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #ff9933"></div>
-                        <span>Tidak Sehat untuk Kelompok Sensitif (101-150)</span>
+                        <span>Tidak Sehat untuk Kelompok Sensitif (101-150) 😟</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #cc0033"></div>
-                        <span>Tidak Sehat (151-200)</span>
+                        <span>Tidak Sehat (151-200) 😷</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #660099"></div>
-                        <span>Sangat Tidak Sehat (>200)</span>
+                        <span>Sangat Tidak Sehat (>200) 🤢</span>
                     </div>
                 `;
             return div;
