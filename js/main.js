@@ -67,6 +67,42 @@ function getAQIEmoji(aqi) {
     return '☠️'; // Hazardous
 }
 
+// Fungsi untuk mendapatkan deskripsi suhu
+function getTempDescription(temp) {
+    if (temp < 20) return 'Sejuk';
+    if (temp <= 25) return 'Nyaman';
+    if (temp <= 30) return 'Hangat';
+    if (temp <= 35) return 'Panas';
+    return 'Sangat Panas';
+}
+
+// Fungsi untuk mendapatkan deskripsi kelembaban
+function getHumidityDescription(humidity) {
+    if (humidity < 30) return 'Sangat Kering';
+    if (humidity <= 50) return 'Kering';
+    if (humidity <= 70) return 'Ideal';
+    if (humidity <= 85) return 'Lembab';
+    return 'Sangat Lembab';
+}
+
+// Fungsi untuk mendapatkan deskripsi tekanan udara
+function getPressureDescription(pressure) {
+    if (pressure < 1000) return 'Rendah (Potensi Cuaca Tidak Stabil)';
+    if (pressure <= 1010) return 'Normal';
+    if (pressure <= 1025) return 'Tinggi (Cuaca Cerah)';
+    return 'Sangat Tinggi (Cuaca Sangat Cerah)';
+}
+
+// Fungsi untuk mendapatkan deskripsi kecepatan angin
+function getWindDescription(speed) {
+    if (speed < 0.3) return 'Sangat Tenang';
+    if (speed <= 1.5) return 'Sepoi Lemah';
+    if (speed <= 3.4) return 'Sepoi Normal';
+    if (speed <= 5.5) return 'Hembusan Sedang';
+    if (speed <= 8.0) return 'Hembusan Kuat';
+    return 'Kencang';
+}
+
 // Fungsi untuk mengambil data terkini
 async function getCurrentData() {
     try {
@@ -135,50 +171,140 @@ function displayCurrentData(cityData) {
             minute: '2-digit'
         });
         
+        // Get descriptions for each weather parameter
+        const tempDesc = getTempDescription(weather.tp);
+        const humidityDesc = getHumidityDescription(weather.hu);
+        const pressureDesc = getPressureDescription(weather.pr);
+        const windDesc = getWindDescription(weather.ws);
+        
+        // Check if weather is rain-related and add animation class
+        const isRain = weather.ic.includes('09') || weather.ic.includes('10') || weather.ic.includes('11');
+        const weatherIconClass = isRain ? 'rain-animation' : '';
+        
         currentAirQuality.innerHTML = `
-                    <h3>Lokasi: ${cityData.city}, ${cityData.state}, ${cityData.country}</h3>
-                    <div class="aqi-indicator ${aqiClass}">
-                        AQI: ${pollution.aqius} - ${aqiText} <span class="aqi-emoji">${getAQIEmoji(aqi)}</span>
-                    </div>
-                    <div class="weather-icon">
-                        <span style="font-size: 3em;">${getWeatherIcon(weather.ic)}</span>
-                        <span style="font-size: 1.2em; margin-top: 5px;">
-                            ${getWeatherDescription(weather.ic)}
-                        </span>
-                    </div>
-                    <div class="weather-grid">
-                        <div class="weather-item">
-                            <div class="weather-icon-small">🌡️</div>
-                            <h4>Suhu</h4>
-                            <p>${weather.tp}&deg;C</p>
-                        </div>
-                        <div class="weather-item">
-                            <div class="weather-icon-small">💧</div>
-                            <h4>Kelembaban</h4>
-                            <p>${weather.hu}%</p>
-                            <small>(Rentang normal: 0% - 100%)</small>
-                        </div>
-                        <div class="weather-item">
-                            <div class="weather-icon-small">🧭</div>
-                            <h4>Tekanan Udara</h4>
-                            <p>${weather.pr} hPa</p>
-                        </div>
-                        <div class="weather-item">
-                            <div class="weather-icon-small">💨</div>
-                            <h4>Kecepatan Angin</h4>
-                            <p>${weather.ws} m/s</p>
-                            <small>(Angin normal: 0.3 - 3.4 m/s)</small>
+                    <div class="mb-4">
+                        <h3 class="lokasi-info">Lokasi: ${cityData.city}, ${cityData.state}, ${cityData.country}</h3>
+                        <div class="d-inline-flex align-items-center ${aqiClass} rounded-pill px-4 py-2 mb-3 aqi-indicator-animation">
+                            AQI: <span id="aqiValue" class="ms-1 fw-bold">${pollution.aqius}</span> - ${aqiText} <span class="ms-2 fs-4">${getAQIEmoji(aqi)}</span>
                         </div>
                     </div>
-                    <div class="pollutant-info">
-                        <p>Polutan Utama: ${getPollutantName(pollution.mainus)}</p>
+                    
+                    <div class="text-center my-4">
+                        <div class="weather-icon-container ${weatherIconClass}">
+                            <div class="weather-icon-large">${getWeatherIcon(weather.ic)}</div>
+                        </div>
+                        <h4 class="weather-description mt-3">${getWeatherDescription(weather.ic)}</h4>
                     </div>
-                    <div class="last-updated">
-                        Terakhir diperbarui: ${formattedDate}, ${formattedTime}
+                    
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 my-3">
+                        <div class="col weather-card-animation">
+                            <div class="card h-100 weather-card">
+                                <div class="card-body text-center">
+                                    <div class="display-6 mb-3">🌡️</div>
+                                    <h5 class="card-title fw-bold">Suhu</h5>
+                                    <p class="mb-1"><span id="tempValue" class="weather-value">${weather.tp}</span><span class="weather-value">&deg;C</span></p>
+                                    <p class="weather-desc">${tempDesc}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col weather-card-animation">
+                            <div class="card h-100 weather-card">
+                                <div class="card-body text-center">
+                                    <div class="display-6 mb-3">💧</div>
+                                    <h5 class="card-title fw-bold">Kelembaban</h5>
+                                    <p class="mb-1"><span id="humidityValue" class="weather-value">${weather.hu}</span><span class="weather-value">%</span></p>
+                                    <p class="weather-desc">${humidityDesc}</p>
+                                    <small class="weather-range">(Rentang normal: 0% - 100%)</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col weather-card-animation">
+                            <div class="card h-100 weather-card">
+                                <div class="card-body text-center">
+                                    <div class="display-6 mb-3">🧭</div>
+                                    <h5 class="card-title fw-bold">Tekanan Udara</h5>
+                                    <p class="mb-1"><span id="pressureValue" class="weather-value">${weather.pr}</span><span class="weather-value"> hPa</span></p>
+                                    <p class="weather-desc">${pressureDesc}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col weather-card-animation">
+                            <div class="card h-100 weather-card">
+                                <div class="card-body text-center">
+                                    <div class="display-6 mb-3">💨</div>
+                                    <h5 class="card-title fw-bold">Kecepatan Angin</h5>
+                                    <p class="mb-1"><span id="windValue" class="weather-value">${weather.ws}</span><span class="weather-value"> m/s</span></p>
+                                    <p class="weather-desc">${windDesc}</p>
+                                    <small class="weather-range">(Angin normal: 0.3 - 3.4 m/s)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 border-top pt-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-secondary mb-1">
+                                    <i class="bi bi-info-circle me-1"></i> Polutan Utama: ${getPollutantName(pollution.mainus)}
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-clock me-1"></i> Terakhir diperbarui: ${formattedDate}, ${formattedTime}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 `;
+        
+        // Initialize CountUp animations with error handling
+        setTimeout(() => {
+            try {
+                // Check if CountUp is available
+                if (typeof CountUp === 'function') {
+                    // AQI counter
+                    new CountUp('aqiValue', 0, pollution.aqius, 0, 2, {
+                        useEasing: true,
+                        useGrouping: true,
+                        separator: ',',
+                        decimal: '.'
+                    }).start();
+                    
+                    // Temperature counter
+                    new CountUp('tempValue', 0, weather.tp, 1, 2, {
+                        useEasing: true,
+                        decimal: '.'
+                    }).start();
+                    
+                    // Humidity counter
+                    new CountUp('humidityValue', 0, weather.hu, 0, 2, {
+                        useEasing: true
+                    }).start();
+                    
+                    // Pressure counter
+                    new CountUp('pressureValue', 900, weather.pr, 0, 2, {
+                        useEasing: true
+                    }).start();
+                    
+                    // Wind counter
+                    new CountUp('windValue', 0, weather.ws, 2, 2, {
+                        useEasing: true,
+                        decimal: '.'
+                    }).start();
+                } else {
+                    console.warn('CountUp library not loaded properly, animations disabled');
+                }
+            } catch (error) {
+                console.error('Error initializing CountUp animations:', error);
+            }
+        }, 500);
+        
     } else {
-        currentAirQuality.innerHTML = '<p class="error">Data pengukuran tidak tersedia</p>';
+        currentAirQuality.innerHTML = `
+            <div class="alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Data pengukuran tidak tersedia
+            </div>
+        `;
     }
 }
 
@@ -228,43 +354,55 @@ async function getHistoricalData() {
         const isMobile = window.innerWidth <= 480;
         const initialZoom = isMobile ? 11 : 12;
         
+        // Add animation class to map container
+        document.getElementById('map').classList.add('map-animation');
+        
         const map = L.map('map').setView(samarindaCenter, initialZoom);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
         
+        // Get descriptions for map popup
+        const tempDesc = getTempDescription(currentWeather.tp);
+        const humidityDesc = getHumidityDescription(currentWeather.hu);
+        const pressureDesc = getPressureDescription(currentWeather.pr);
+        const windDesc = getWindDescription(currentWeather.ws);
+        
         // Buat konten popup yang lebih informatif dengan ikon cuaca
         const popupContent = `
-                <div style="min-width: 200px;">
-                    <h3 style="margin: 0 0 10px 0;">Kualitas Udara & Cuaca</h3>
-                    <div style="margin-bottom: 8px;">
-                        <strong>AQI:</strong> <span style="color: ${getAQIColor(currentAQI)};">${currentAQI}</span> ${getAQIEmoji(currentAQI)}
+                <div>
+                    <h3>Kualitas Udara & Cuaca</h3>
+                    <div class="mb-3">
+                        <strong style="color: ${getAQIColor(currentAQI)};">AQI: ${currentAQI}</strong> 
+                        <span class="fs-1">${getAQIEmoji(currentAQI)}</span>
                     </div>
-                    <div style="margin-bottom: 10px; text-align: center; font-size: 2em;">
-                        ${getWeatherIcon(currentWeather.ic)}
-                    </div>
-                    <div style="margin-bottom: 10px; text-align: center;">
+                    <div class="text-center mb-3">
+                        <div class="fs-1">${getWeatherIcon(currentWeather.ic)}</div>
                         <strong>${getWeatherDescription(currentWeather.ic)}</strong>
                     </div>
-                    <div style="margin-bottom: 5px;">
-                        <strong>🌡️ Suhu:</strong> ${currentWeather.tp}°C
+                    <div class="mb-2">
+                        <div><strong>🌡️ Suhu:</strong> ${currentWeather.tp}°C</div>
+                        <div class="text-secondary">${tempDesc}</div>
                     </div>
-                    <div style="margin-bottom: 5px;">
-                        <strong>💧 Kelembaban:</strong> ${currentWeather.hu}% (0% - 100%)
+                    <div class="mb-2">
+                        <div><strong>💧 Kelembaban:</strong> ${currentWeather.hu}%</div>
+                        <div class="text-secondary">${humidityDesc} (0% - 100%)</div>
                     </div>
-                    <div style="margin-bottom: 5px;">
-                        <strong>🧭 Tekanan Udara:</strong> ${currentWeather.pr} hPa
+                    <div class="mb-2">
+                        <div><strong>🧭 Tekanan Udara:</strong> ${currentWeather.pr} hPa</div>
+                        <div class="text-secondary">${pressureDesc}</div>
                     </div>
                     <div>
-                        <strong>💨 Kecepatan Angin:</strong> ${currentWeather.ws} m/s (Normal: 0.3 - 3.4 m/s)
+                        <div><strong>💨 Kecepatan Angin:</strong> ${currentWeather.ws} m/s</div>
+                        <div class="text-secondary">${windDesc} (Normal: 0.3 - 3.4 m/s)</div>
                     </div>
                 </div>
             `;
         
         // Tambahkan marker dengan popup yang lebih informatif
         const marker = L.marker(samarindaCenter)
-        .bindPopup(popupContent)
+        .bindPopup(popupContent, { minWidth: 250 })
         .addTo(map);
         
         // Buka popup secara otomatis
@@ -283,7 +421,7 @@ async function getHistoricalData() {
         legend.onAdd = function(map) {
             const div = L.DomUtil.create('div', 'map-legend');
             div.innerHTML = `
-                    <h4 style="margin: 0 0 8px 0;">Kualitas Udara</h4>
+                    <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Kualitas Udara</h4>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #009966"></div>
                         <span>Baik (0-50) 😊</span>
@@ -321,6 +459,21 @@ async function getHistoricalData() {
     
     // Update event listener
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize AOS animations
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false
+        });
+        
         getCurrentData();
         getHistoricalData();
+        
+        // Add animation to title
+        const headerTitle = document.querySelector('.display-4');
+        if (headerTitle) {
+            headerTitle.style.opacity = '0';
+            headerTitle.style.animation = 'fadeIn 1.5s forwards';
+        }
     });
